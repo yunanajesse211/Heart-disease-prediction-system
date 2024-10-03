@@ -2,27 +2,25 @@ from tkinter import *
 import pyttsx3
 from tkinter import ttk
 from PIL import Image,ImageTk
-from sklearn.svm import SVC
+import pickle as pk
 from ttkthemes import themed_tk
 import numpy as np
 import random
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from tkinter import messagebox 
-
+from tkinter import messagebox
+ 
 
 class Heart:
     def __init__(self,win):
         self.win=win
-        self.win.geometry('1350x800')
-        self.win.title('HEART DISEASEPREDICTION SYSTEM')
+        self.win.geometry('1300x800')
+        self.win.title('HEART DISEASE PREDICTION SYSTEM')
         self.win.iconbitmap('heart.ico')
         self.win.resizable(False,True)
         self.text_f=Label(self.win,text='HEART DISEASE PREDICTION SYSTEM',font='cambria 50 bold',fg='red')
         self.text_f.pack()
         self.fram=Frame(self.win,bg='black')
-        self.fram.place(x=80,y=80,width=1250,height=600)
+        self.fram.place(x=15,y=80,width=1250,height=600)
         
         self.frame=Frame(self.fram,bg='white',bd=9)
         self.frame.place(x=10,y=20,width=600,height=500)
@@ -45,23 +43,23 @@ class Heart:
         self.name=ttk.Entry(self.frame,textvariable=self.name_value)
         self.name.grid(row=1,column=1,pady=3)
         
-        self.age_label=Label(self.frame,text='Enter your age:',bg='white',fg='black',font='arial 12 bold')
+        self.age_label=Label(self.frame,text="Enter Patient's Age:",bg='white',fg='black',font='arial 12 bold')
         self.age_label.grid(row=2,column=0,padx=10,pady=2,sticky=W)
         
         self.age_value=StringVar()
         self.age=ttk.Entry(self.frame,textvariable=self.age_value)
         self.age.grid(row=2,column=1,pady=3)
         
-        self.sex_label=Label(self.frame,text='Choose sex:',bg='white',fg='black',font='arial 12 bold')
+        self.sex_label=Label(self.frame,text='Select Gender:',bg='white',fg='black',font='arial 12 bold')
         self.sex_label.grid(row=3,column=0,padx=10,pady=2,sticky=W)
         
         self.sex_value=StringVar()
         self.sex=ttk.Combobox(self.frame,textvariable=self.sex_value,state='readonly',width=18)
-        self.sex['values']=('choose sex','male','female')
+        self.sex['values']=('male','female')
         self.sex.current(0)
         self.sex.grid(row=3,column=1,pady=3)
         
-        self.chest_label=Label(self.frame,text='Do you feel severe chest pain:',bg='white',fg='black',font='arial 12 bold')
+        self.chest_label=Label(self.frame,text='Feels severe chest pain:',bg='white',fg='black',font='arial 12 bold')
         self.chest_label.grid(row=4,column=0,padx=10,pady=2,sticky=W)
         
         self.chest_value=StringVar()
@@ -71,7 +69,7 @@ class Heart:
         self.chest.grid(row=4,column=1,pady=3,sticky=W)
         
         self.restingBP_value=StringVar()
-        self.restingBP=Label(self.frame,text='Enter your Resting Blood Pressure level (mm Hg):',font='arial 12 bold',bg='white',fg='black')
+        self.restingBP=Label(self.frame,text='Enter Resting Blood Pressure level (mm Hg):',font='arial 12 bold',bg='white',fg='black')
         self.restingBP.grid(row=5,column=0,padx=10,pady=2,sticky=W)
         self.restingBP_val=ttk.Entry(self.frame,textvariable=self.restingBP_value)
         self.restingBP_val.grid(row=5,column=1,pady=3)
@@ -83,7 +81,7 @@ class Heart:
         self.chol_val.grid(row=6,column=1,pady=3)
         
         self.fastBS_value=StringVar()
-        self.fastBS=Label(self.frame,text='is your sugar level greater than 120mg/dl:',font='arial 12 bold',bg='white',fg='black')
+        self.fastBS=Label(self.frame,text='Is sugar level greater than 120mg/dl:',font='arial 12 bold',bg='white',fg='black')
         self.fastBS.grid(row=7,column=0,padx=10,pady=2,sticky=W)
         self.fastBS_val=ttk.Combobox(self.frame,textvariable=self.fastBS_value,state='readonly',width=18)
         self.fastBS_val['values']=['Yes','No']
@@ -92,12 +90,12 @@ class Heart:
         
         
         #axis 2 
-        self.ecg_label=Label(self.frame2,text='Select your ECG range:',bg='white',fg='black',font='arial 12 bold')
+        self.ecg_label=Label(self.frame2,text='Select ECG range:',bg='white',fg='black',font='arial 12 bold')
         self.ecg_label.grid(row=0,column=0,padx=10,pady=2,sticky=W)
         
         self.ecg_value=StringVar()
         self.ecg=ttk.Combobox(self.frame2,textvariable=self.ecg_value,width=18,state='readonly')
-        self.ecg['values']=('Choose range','Normal[-0.5 to 0.4]','ST-T Abnormal[2.45 to 1.8]','Hypertrophy[1.4 to 2.8]')
+        self.ecg['values']=('Normal[-0.5 to 0.4]','ST-T Abnormal[2.45 to 1.8]','Hypertrophy[1.4 to 2.8]')
         self.ecg.current(0)
         self.ecg.grid(row=0,column=1,pady=3)
         
@@ -142,7 +140,7 @@ class Heart:
         self.ca_val.grid(row=5,column=1,pady=3)
     
         self.defect_value=StringVar()
-        self.defect=Label(self.frame2,text='slect defect type:',font='arail 12 bold',bg='white',fg='black')
+        self.defect=Label(self.frame2,text='select defect type:',font='arail 12 bold',bg='white',fg='black')
         self.defect.grid(row=6,column=0,padx=10,pady=2,sticky=W)
         self.defect_val=ttk.Combobox(self.frame2,textvariable=self.defect_value,state='readonly',width=18)
         self.defect_val['values']=['Normal','Fixed defect','Reversible defect']
@@ -215,21 +213,11 @@ class Heart:
         try:
             self.patient_details=np.array([[int(self.age_value.get()),int(self.sex_value.get()),int(self.chest_value.get()),int(self.restingBP_value.get()),int(self.chol_value.get()),int(self.fastBS_value.get()),int(self.ecg_value.get()),int(self.heart_rate_value.get()),int(self.induced_cp_value.get()),float(self.peak_value.get()),int(self.slope_value.get()),int(self.ca_value.get()),int(self.defect_value.get())]])
             
-            #data
-            self.data=pd.read_csv('datasets/cleveland.csv')
-            self.x=self.data.iloc[:,:-1].values
-            self.y=self.data.iloc[:,-1].values
-            #training
-            self.x_train,self.x_test,self.y_train,self.y_test=train_test_split(self.x,self.y,test_size=.2,random_state=40) 
-            self.sc=StandardScaler()
-            self.x_train=self.sc.fit_transform(self.x_train)
-            self.x_test=self.sc.transform(self.x_test)
-            self.patient_details=self.sc.transform(self.patient_details)
-            #making predictions
-            self.lr=SVC(C=10, gamma=0.01, random_state=0)
-
-            self.lr.fit(self.x_train,self.y_train)
+            with open('model.pkl','rb') as f:
+                self.lr=pk.load(f)
+            self.patient_details=self.patient_details.reshape(self.patient_details.shape[0],self.patient_details.shape[1],1)
             self.y_pred=self.lr.predict(self.patient_details)
+            self.y_pred=(self.y_pred>=0.5).astype(int)
             self.name_2=self.name_value.get()
             self.p_id=self.id_num_value.get()
             self.clear()
@@ -239,6 +227,8 @@ class Heart:
             voice=speech.getProperty('voices')
             speech.setProperty('rate',159)
             speech.setProperty('voice',voice[1].id)
+            if self.p_id=='':
+                self.p_id='Missing value'
             data={'Patient ID':[self.p_id] ,'Patient Name':[self.name_2] , 'Heart Condition':[self.y_pred[0]]}
             df=pd.DataFrame(data,columns=['Patient ID','Patient Name','Heart Condition'])
             df.to_csv('patient_records.csv',index=False,mode='a',header=False)
@@ -249,17 +239,20 @@ class Heart:
                     speak=self.name_2 +', you likely have a heart disease. see a doctor please'
                     speech.say(speak)
                     speech.runAndWait()
-                    self.result_label.config(text=self.name_2+', you likely have a heart disease. see a doctor please',fg='red')
+                    self.result_label.config(text=self.name_2+', sorry we found likelyhood of having heart disease...see a Doctor',fg='red')
+                    
                 else:
-                    speak=self.name_2+', congratulations, you do not have a heart disease, stay safe and take good care of your heart'
+                    speak=self.name_2+', congratulations, no trace of heart disease found'
                     speech.say(speak)
                     speech.runAndWait()
-                    self.result_label.config(text=self.name_2+', congrats, you do not have a heart disease, stay safe and take good care of your heart',fg='green')
+                    self.result_label.config(text=self.name_2+', congrats, no trace of heart disease found',fg='green')
+                    
             
             
         except Exception as e:
             self.clear()
             messagebox.showerror("ERROR ALERT",'please check details supplied,there is an error')
+            
            
             
         
@@ -267,12 +260,12 @@ class Heart:
         self.id_num.delete(0,END)
         self.name.delete(0,END)
         self.age.delete(0,END)
-        self.sex.set('choose sex')
+        self.sex.set('male')
         self.chest_value.set('yes not too severe')
         self.restingBP_val.delete(0,END)
         self.chol_val.delete(0,END)
         self.fastBS_val.set('Yes')
-        self.ecg.set('Choose range')
+        self.ecg.set('Normal[-0.5 to 0.4]')
         self.heart_rate.delete(0,END)
         self.induced_cp.set('yes')
         self.peak.delete(0,END)
